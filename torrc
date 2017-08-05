@@ -1,0 +1,49 @@
+## Configuration file for an atypical Tor user
+## Based on torrc configurations provided by...
+# https://gitweb.torproject.org/tor.git/plain/src/config/torrc.sample.in
+# https://git-tails.immerda.ch/tails/plain/config/chroot_local-includes/etc/tor/torrc
+# https://www.torproject.org/docs/tor-manual.html.en
+
+## The directory for keeping all the keys/etc. By default, we store
+## things in $HOME/.tor on Unix, and in Application Data\tor on Windows.
+DataDirectory /var/lib/tor
+
+# Stream Isolation
+## https://tails.boum.org/contribute/design/stream_isolation/
+## https://wiki.gentoo.org/wiki/Tor#Stream_isolation
+
+## Default SocksPort
+SocksPort 127.0.0.1:9050 IsolateDestAddr IsolateDestPort
+
+## SocksPort for the MUA
+SocksPort 127.0.0.1:9061 IsolateDestAddr
+
+## SocksPort for misc applications
+SocksPort 127.0.0.1:9062 IsolateDestAddr IsolateDestPort
+
+## SocksPort for the default web browser
+SocksPort 127.0.0.1:9150 IsolateSOCKSAuth KeepAliveIsolateSOCKSAuth
+
+
+## The port on which Tor will listen for local connections from Tor
+## controller applications, as documented in control-spec.txt.
+#ControlPort 9051
+#ControlListenAddress 127.0.0.1
+
+
+
+## Torified DNS
+DNSPort 127.0.0.1:9053 IsolateClientAddr IsolateSOCKSAuth IsolateClientProtocol IsolateDestPort IsolateDestAddr
+AutomapHostsOnResolve 1
+AutomapHostsSuffixes .exit, .onion
+#ClientDNSRejectInternalAddresses 1 (Default is already 1)
+ClientRejectInternalAddresses 1 
+
+## Transparent proxy
+TransPort 127.0.0.1:9040 IsolateClientAddr IsolateSOCKSAuth IsolateClientProtocol IsolateDestPort IsolateDestAddr
+
+## Misc
+AvoidDiskWrites 1
+Sandbox 1
+ExtraInfoStatistics 0
+EnforceDistinctSubnets 1

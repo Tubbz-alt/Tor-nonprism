@@ -1,0 +1,85 @@
+# Every function specify the commands to run after specific operation. To do it, just exec the function.
+
+pre_install() {
+	echo "Cleaning any old chroots before installing a new one..."
+	rm -rf /opt/torchroot
+}
+
+post_install() {
+	echo "Installing a new chroot ... "
+	/usr/bin/sh -c "/opt/tor-hardened-scripts/torchroot.sh"
+	wait
+	echo "Done!"
+	echo "====="
+	echo "To use this service please disable tor.service"
+	echo "then enable/start tor-hardened.service via systemctl."
+	echo "----"
+	echo "You may now use stream isolated ports for added security."
+	echo "Please configure your applications as follows:"
+	echo "Default Port: 9050"
+	echo "Mail Client isolated port: 9061"
+	echo "Browser isolated port: 9150"
+	echo "Other applications you want isolated: 9062"
+	echo "----"
+	echo "To use TOR as your DNS resolver:"
+	echo "Place ONLY this line into /etc/resolv.conf:"
+	echo "nameserver 127.0.0.1"
+	echo "Apply the following firewall rules:"
+	echo "iptables -t nat -A OUTPUT -p TCP --dport 53 -j DNAT --to-destination 127.0.0.1:9053"
+	echo "iptables -t nat -A OUTPUT -p UDP --dport 53 -j DNAT --to-destination 127.0.0.1:9053"
+	echo "----"
+	echo "To request new IP from TOR:"
+	echo "killall -HUP tor"
+	echo "---"
+	echo "Advanced usage, not recommended:"
+	echo "To torify ALL TCP traffic, you can use TorTransport without stream isolation:"
+	echo "iptables -t nat -A OUTPUT -p TCP -m owner ! --uid-owner tor -j DNAT --to-destination 127.0.0.1:9040"
+	echo "WARNING: UDP traffic may still leak! All traffic goes through single port. Apply additional iptables rules as you see fit."
+	echo "====="
+}
+
+post_upgrade() {
+#	systemctl stop tor-hardened
+    killall -HUP tor-hardened.sh
+	echo "Cleaning old chroot and putting in a new one..."
+	rm -rf /opt/torchroot
+	wait
+	/usr/bin/sh -c "/opt/tor-hardened-scripts/torchroot.sh"
+	wait
+	echo "Done!"
+	echo "====="
+	echo "To use this service please disable tor.service"
+	echo "then enable/start tor-hardened.service via systemctl."
+	echo "----"
+	echo "You may now use stream isolated ports for added security."
+	echo "Please configure your applications as follows:"
+	echo "Default Port: 9050"
+	echo "Mail Client isolated port: 9061"
+	echo "Browser isolated port: 9150"
+	echo "Other applications you want isolated: 9062"
+	echo "----"
+	echo "To use TOR as your DNS resolver:"
+	echo "Place ONLY this line into /etc/resolv.conf:"
+	echo "nameserver 127.0.0.1"
+	echo "Apply the following firewall rules:"
+	echo "iptables -t nat -A OUTPUT -p TCP --dport 53 -j DNAT --to-destination 127.0.0.1:9053"
+	echo "iptables -t nat -A OUTPUT -p UDP --dport 53 -j DNAT --to-destination 127.0.0.1:9053"
+	echo "----"
+	echo "To request new IP from TOR:"
+	echo "killall -HUP tor"
+	echo "---"
+	echo "Advanced usage, not recommended:"
+	echo "To torify ALL TCP traffic, you can use TorTransport without stream isolation:"
+	echo "iptables -t nat -A OUTPUT -p TCP -m owner ! --uid-owner tor -j DNAT --to-destination 127.0.0.1:9040"
+	echo "WARNING: UDP traffic may still leak! All traffic goes through single port. Apply additional iptables rules as you see fit."
+	echo "====="
+#	systemctl daemon-reload
+# restart Tor-hardened
+}
+
+post_remove() {
+	echo "Deleting chroot..."
+	rm -rf /opt/torchroot
+	wait
+	echo "Done!"
+}

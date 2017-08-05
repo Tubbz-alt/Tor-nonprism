@@ -1,0 +1,31 @@
+#!/bin/sh
+##
+
+pkgdir=""
+
+if [ $UID != "0" ]; then
+	echo "Please run it as root."
+	exit 1
+fi
+
+echo "You should run it under the package's directory :)"
+
+if [ -e tor-hardened.sh -a -e torrc -a -e torchroot.sh ];then
+	mkdir -p ${pkgdir}/opt/tor-hardened-scripts
+	install -Dm755 tor-hardened.sh ${pkgdir}/opt/tor-hardened-scripts/tor-hardened.sh
+	install -Dm644 torrc ${pkgdir}/opt/tor-hardened-scripts/torrc
+	install -Dm755 torchroot.sh ${pkgdir}/opt/tor-hardened-scripts/torchroot.sh
+else
+	echo "Some files missing!"
+fi
+
+
+. ./To-do-after-install-upgrade.install
+
+echo "Cleaning any old chroots before installing a new one..."
+pre_install
+
+echo "Installing a new chroot ... "
+post_install
+
+exit
