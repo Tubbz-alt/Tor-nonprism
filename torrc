@@ -47,3 +47,6 @@ AvoidDiskWrites 1
 Sandbox 1
 ExtraInfoStatistics 0
 EnforceDistinctSubnets 1
+
+## Proxy to breakwall first
+Socks5Proxy 127.0.0.1:1080
