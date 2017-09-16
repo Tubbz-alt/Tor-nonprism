@@ -1,23 +1,30 @@
-#!/bin/sh
+#!/bin/bash
+
+set -eu
 
 ##############################################
 # Tor-Hardened Cleaner & Startup Script #
 ##############################################
-# Clean left over files
-echo "Cleaning any files left over from a previous run..."
-rm /opt/torchroot/var/lib/tor/*
-# Detect old version and upgrade
-Torchroothash=$(sha256sum /opt/torchroot/usr/bin/tor | awk '{print $1}')
-Toroutsidehash=$(sha256sum /usr/bin/tor | awk '{print $1}')
-if [ "$Torchroothash" != "$Toroutsidehash" ]
-then
-	echo "New version of Tor detected! Updating chroot before running."
-	rm -rf /opt/torchroot
-	wait
-	/usr/bin/sh -c "/opt/tor-hardened-scripts/torchroot.sh"
-	wait
+
+if [ $UID -ne 0 ];then
+	echo "Tor should be initiated as root in this script. Quit..."
+	exit 1
 fi
 
-# Start Tor inside of our chroot
+# Check whether tor is already running.
+ISRUN=$(ps -ef |grep "/usr/bin/tor" |grep -v grep | awk '{print $8}' | sed -n '1 p')
+if [ "$ISRUN" = "/usr/bin/tor" ];then
+	echo "Is Tor already running? Please quit it first."
+	exit 1
+fi
+
+# Start our iptables rules.
+echo "Changing iptables rules to enable transparent proxy...Please enter root password: "
+iptables-restore < /opt/tor-hardened/iptables-tor.rules
+
+# Start Tor with our hardened torrc.
 echo "Running Tor..."
-chroot --userspec=tor:tor /opt/torchroot /usr/bin/tor -f /etc/tor/torrc
+/usr/bin/tor -f /opt/tor-hardened/torrc
+
+exit
+
